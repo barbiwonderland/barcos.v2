@@ -9,7 +9,7 @@ export function SectionButtons({ title }: Props) {
   const navigation = useNavigation();
 
   const handlePress = () => {
-    navigation.navigate(`lista-${title}` as never); 
+    navigation.navigate(`${title}` as never); 
   };
 
   return (
