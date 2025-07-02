@@ -31,7 +31,7 @@ export function SectionButtons({ title }: Props) {
         elevation: 5,
       }}>
       <Image
-        source={require('../assets/wind-rose.svg')} 
+        source={require('../assets/wind-rose.png')} 
         style={{ marginRight: 8, width: 24, height: 24 }}
         resizeMode="contain"
       />

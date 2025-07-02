@@ -1,98 +1,68 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Container } from '~/components/Container';
-import { ScreenContent } from '~/components/ScreenContent';
-import { SectionButtons } from '~/components/Section-buttons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
+import { useState } from 'react';
+import * as Sharing from 'expo-sharing';
+import Pdf from 'react-native-pdf';
+import { Dimensions } from 'react-native';
+import { Platform } from 'react-native';
 
-export default function Cubiertas() {
+export default function Certificados() {
+  const [selectedDocuments, setSelectedDocuments] = useState<DocumentPicker.DocumentPickerAsset[]>(
+    []
+  );
+
+  const [pdfVisible, setPdfVisible] = useState(false);
+  const [currentPdfUri, setCurrentPdfUri] = useState<string | null>(null);
   const { name } = useLocalSearchParams();
-  const certificados: {
-    nombre: string;
-    fecha: string;
-    archivo: string;
-  }[] = [
-    {
-      nombre: 'Certificado de Matrícula',
-      fecha: '2025-06-10',
-      archivo: 'certificado-matricula.pdf',
-    },
-    {
-      nombre: 'Permiso de Navegación',
-      fecha: '2025-05-22',
-      archivo: 'permiso-navegacion.pdf',
-    },
-    {
-      nombre: 'Certificado de Seguridad',
-      fecha: '2025-04-15',
-      archivo: 'certificado-seguridad.pdf',
-    },
-    {
-      nombre: 'Seguro Obligatorio',
-      fecha: '2025-03-08',
-      archivo: 'seguro-obligatorio.pdf',
-    },
-    {
-      nombre: 'Revisión Técnica Anual',
-      fecha: '2025-02-28',
-      archivo: 'revision-tecnica.pdf',
-    },
-    {
-      nombre: 'Habilitación de Capitán',
-      fecha: '2025-01-20',
-      archivo: 'habilitacion-capitan.pdf',
-    },
-    {
-      nombre: 'Licencia de Radio',
-      fecha: '2024-12-05',
-      archivo: 'licencia-radio.pdf',
-    },
-    {
-      nombre: 'Certificado de Motor',
-      fecha: '2024-11-12',
-      archivo: 'certificado-motor.pdf',
-    },
-    {
-      nombre: 'Permiso de Amarre',
-      fecha: '2024-10-01',
-      archivo: 'permiso-amarre.pdf',
-    },
-    {
-      nombre: 'Certificado de Egreso',
-      fecha: '2024-09-18',
-      archivo: 'certificado-egreso.pdf',
-    },
-    {
-      nombre: 'Certificado de Motor',
-      fecha: '2024-11-12',
-      archivo: 'certificado-motor.pdf',
-    },
-    {
-      nombre: 'Permiso de Amarre',
-      fecha: '2024-10-01',
-      archivo: 'permiso-amarre.pdf',
-    },
-    {
-      nombre: 'Certificado de Egreso',
-      fecha: '2024-09-18',
-      archivo: 'certificado-egreso.pdf',
-    },
-  ];
-  
-  const handleAddCertificate = () => {
+  const PdfResource = {
+    uri: 'https://www.cats.org.uk/media/1025/eg14_cats_and_people.pdf',
+    cache: true,
+  };
+  // const source = require('../assets/pdf/BarbaraBottazzi-eng.pdf');
+  const handleAddCertificate = async () => {
     console.log('Agregar nuevo certificado');
+    const result = await DocumentPicker.getDocumentAsync({
+      type: 'application/pdf',
+    });
+
+    if (!result.canceled && result.assets?.length) {
+      const file = result.assets[0];
+      const now = Date.now();
+
+      const fileWithDate = { ...file, lastModified: now };
+      setSelectedDocuments((prev) => [...prev, fileWithDate]);
+    }
   };
 
-
-  const handleRemoveCertificate = () => {
+  const handleRemoveCertificate = async (file: DocumentPicker.DocumentPickerAsset) => {
     console.log('Remover certificado');
+    try {
+      await FileSystem.deleteAsync(file.uri, { idempotent: true });
+
+      setSelectedDocuments((prev) => prev.filter((c) => c.uri !== file.uri));
+      console.log(`✅ Certificado eliminado: ${file.name}`);
+    } catch (error) {
+      console.error('❌ Error al eliminar certificado:', error);
+    }
   };
 
-  const handleViewCertificate = () => {
-
+  const handleViewCertificate = async (uri: string) => {
     console.log('Ver certificado');
+    setCurrentPdfUri(uri);
+    setPdfVisible(true);
+  };
 
+  function formatDateSimple(timestamp: number) {
+    const date = new Date(timestamp);
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   }
 
   return (
@@ -108,7 +78,9 @@ export default function Cubiertas() {
           <View className=" mx-auto h-3/4 w-10/12">
             {/* Botón Agregar */}
             <View className="mb-2 mt-6 items-start">
-              <TouchableOpacity onPress={handleAddCertificate} className="rounded-md bg-white px-4 py-2 ">
+              <TouchableOpacity
+                onPress={handleAddCertificate}
+                className="rounded-md bg-white px-4 py-2 ">
                 <Text className="font-semibold text-[#0A1C34]">Agregar nuevo</Text>
               </TouchableOpacity>
             </View>
@@ -122,22 +94,24 @@ export default function Cubiertas() {
 
             {/* Lista de elementos */}
             <ScrollView>
-              {certificados.map((item, index) => (
+              {selectedDocuments.map((item, index) => (
                 <View
                   key={index}
                   className="flex-row items-center justify-between border-b border-gray-300 bg-white px-4 py-3">
                   {/* Nombre */}
-                  <Text className="w-1/3 font-bold text-gray-900">{item.nombre}</Text>
+                  <Text className="w-1/3 font-bold text-gray-900">{item.name}</Text>
 
                   {/* Fecha */}
-                  <Text className="w-1/3 text-center text-gray-700">{item.fecha}</Text>
+                  <Text className="w-1/3 text-center text-gray-700">
+                    {formatDateSimple(item.lastModified!)}
+                  </Text>
 
                   {/* Acciones */}
                   <View className="w-1/3 flex-row justify-end space-x-5">
-                    <TouchableOpacity onPress={() => handleViewCertificate()}>
+                    <TouchableOpacity onPress={() => handleViewCertificate(item.uri)}>
                       <AntDesign name="eye" size={24} color="#1e3a8a" />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleRemoveCertificate()}>
+                    <TouchableOpacity onPress={() => handleRemoveCertificate(item)}>
                       <FontAwesome name="trash" size={24} color="#dc2626" />
                     </TouchableOpacity>
                   </View>
@@ -147,6 +121,47 @@ export default function Cubiertas() {
           </View>
         </View>
       </Container>
+
+      <Modal visible={pdfVisible} animationType="slide" onRequestClose={() => setPdfVisible(false)}>
+        <View style={{ flex: 1, backgroundColor: '#fff' }}>
+          <View style={{ padding: 10, alignItems: 'flex-end' }}>
+            <TouchableOpacity onPress={() => setPdfVisible(false)}>
+              <Text style={{ fontSize: 18, color: '#1e3a8a' }}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
+          {/* Cambio 2: Agregar style={styles.pdf} al componente Pdf */}
+          <Pdf
+            trustAllCerts={false}
+            source={PdfResource}
+            style={styles.pdf}
+            onLoadComplete={(numberOfPages, filePath) => {
+              console.log(`Number of pages: ${numberOfPages}`);
+            }}
+            onPageChanged={(page, numberOfPages) => {
+              console.log(`Current page: ${page}`);
+            }}
+            onError={(error) => {
+              console.log('PDF Error:', error);
+            }}
+            onPressLink={(uri) => {
+              console.log(`Link pressed: ${uri}`);
+            }}
+          />
+        </View>
+      </Modal>
     </>
   );
 }
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    marginTop: 25,
+  },
+  pdf: {
+    flex: 1,
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
+  },
+});

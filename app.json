@@ -17,7 +17,8 @@
         {
           "initialOrientation": "LANDSCAPE"
         }
-      ]
+      ],
+      ["@config-plugins/react-native-blob-util", "@config-plugins/react-native-pdf"]
     ],
     "experiments": {
       "typedRoutes": true,
@@ -31,11 +32,10 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.barcosv2"
     },
     "android": {
       "adaptiveIcon": {
@@ -53,6 +53,12 @@
         }
       ],
       "package": "com.anonymous.barcosv2"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a498d359-10e7-4038-8fe1-79d4c8e7423e"
+      }
     }
   }
 }
