@@ -5,7 +5,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as Sharing from 'expo-sharing';
 import Pdf from 'react-native-pdf';
 import { Dimensions } from 'react-native';
@@ -15,15 +15,48 @@ export default function Certificados() {
   const [selectedDocuments, setSelectedDocuments] = useState<DocumentPicker.DocumentPickerAsset[]>(
     []
   );
-
+  //pdfs de la api
+  const [pdfs, setPdfs] = useState([]);
   const [pdfVisible, setPdfVisible] = useState(false);
   const [currentPdfUri, setCurrentPdfUri] = useState<string | null>(null);
-  const { name } = useLocalSearchParams();
-  const PdfResource = {
-    uri: 'https://www.cats.org.uk/media/1025/eg14_cats_and_people.pdf',
-    cache: true,
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  // Base URL de la API (CAMBIAR)
+  const API_BASE_URL = 'https://tu-api.com/api';
+
+  // Función para cargar todos los PDFs
+  const loadPdfs = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/pdfs`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Agregar headers de autenticación si es necesario
+          // 'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setPdfs(data.pdfs || data); 
+    } catch (err) {
+      console.error('Error al cargar PDFs:', err);
+      setLoading(false);
+    }
   };
-  // const source = require('../assets/pdf/BarbaraBottazzi-eng.pdf');
+
+  //cargar pdfs al inicio
+  useEffect(() => {
+    //comento funcion por que no hay api aun
+    //loadPdfs();
+  }, []);
+
   const handleAddCertificate = async () => {
     console.log('Agregar nuevo certificado');
     const result = await DocumentPicker.getDocumentAsync({
@@ -125,28 +158,32 @@ export default function Certificados() {
       <Modal visible={pdfVisible} animationType="slide" onRequestClose={() => setPdfVisible(false)}>
         <View style={{ flex: 1, backgroundColor: '#fff' }}>
           <View style={{ padding: 10, alignItems: 'flex-end' }}>
-            <TouchableOpacity onPress={() => setPdfVisible(false)}>
-              <Text style={{ fontSize: 18, color: '#1e3a8a' }}>Cerrar</Text>
+            <TouchableOpacity onPress={() => setPdfVisible(false)} className="flex-row gap-2">
+              <Text>
+                <AntDesign name="closecircle" size={24} color="#0A1C34" />{' '}
+              </Text>
             </TouchableOpacity>
           </View>
-          {/* Cambio 2: Agregar style={styles.pdf} al componente Pdf */}
-          <Pdf
-            trustAllCerts={false}
-            source={PdfResource}
-            style={styles.pdf}
-            onLoadComplete={(numberOfPages, filePath) => {
-              console.log(`Number of pages: ${numberOfPages}`);
-            }}
-            onPageChanged={(page, numberOfPages) => {
-              console.log(`Current page: ${page}`);
-            }}
-            onError={(error) => {
-              console.log('PDF Error:', error);
-            }}
-            onPressLink={(uri) => {
-              console.log(`Link pressed: ${uri}`);
-            }}
-          />
+
+          {currentPdfUri && (
+            <Pdf
+              trustAllCerts={false}
+              source={{ uri: currentPdfUri, cache: true }}
+              style={styles.pdf}
+              onLoadComplete={(numberOfPages, filePath) => {
+                console.log(`Number of pages: ${numberOfPages}`);
+              }}
+              onPageChanged={(page, numberOfPages) => {
+                console.log(`Current page: ${page}`);
+              }}
+              onError={(error) => {
+                console.log('PDF Error:', error);
+              }}
+              onPressLink={(uri) => {
+                console.log(`Link pressed: ${uri}`);
+              }}
+            />
+          )}
         </View>
       </Modal>
     </>
