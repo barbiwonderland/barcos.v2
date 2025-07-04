@@ -63,9 +63,9 @@ export default function Home() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Barcos v2' }} />
+      <Stack.Screen options={{headerShown:false}}  />
       <Container>
-        <ScreenContent path="app/index.tsx" title="20-4-2024">
+        <ScreenContent  path="app/index.tsx" title="20-4-2024">
           <Text className="text-center font-bold uppercase sm:text-3xl">BUQUE RUISEÑOR</Text>
           <View className="h-5/6 mx-auto w-11/12  flex-col flex-wrap content-center  py-10">
             {mockData.map((item) => (
