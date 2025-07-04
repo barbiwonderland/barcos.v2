@@ -69,7 +69,7 @@ export default function Home() {
           <Text className="text-center font-bold uppercase sm:text-3xl">BUQUE RUISEÑOR</Text>
           <View className="h-5/6 mx-auto w-11/12  flex-col flex-wrap content-center  py-10">
             {mockData.map((item) => (
-              <View key={item.id} className=" m-2 flex w-5/12 flex-row  gap-2 items-center  p-4">
+              <View key={item.id} className=" m-2 flex w-5/12 flex-row  gap-2 items-center bg-white/50 rounded-full  p-4">
                 {item.priority === 'medium' ? (
                   <AntDesign name="warning" size={24} color="orange" />
                 ) : (
