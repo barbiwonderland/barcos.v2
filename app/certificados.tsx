@@ -10,17 +10,27 @@ import * as Sharing from 'expo-sharing';
 import Pdf from 'react-native-pdf';
 import { Dimensions } from 'react-native';
 import { Platform } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+
+export type pdf = {
+  file: DocumentPicker.DocumentPickerAsset;
+  expirationDate: Date;
+  name: string;
+  id: number;
+};
 
 export default function Certificados() {
-  const [selectedDocuments, setSelectedDocuments] = useState<DocumentPicker.DocumentPickerAsset[]>(
-    []
-  );
+  const [listElements, setListElements] = useState<pdf[] | null>([]);
+  const [selectedElement, setSelectedElement] = useState<pdf | null>(null);
   //pdfs de la api
   const [pdfs, setPdfs] = useState([]);
   const [pdfVisible, setPdfVisible] = useState(false);
   const [currentPdfUri, setCurrentPdfUri] = useState<string | null>(null);
+  const [addPdfModal, setAddPdfModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [expirationDate, setExpirationDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   // Base URL de la API (CAMBIAR)
   const API_BASE_URL = 'https://tu-api.com/api';
 
@@ -44,7 +54,7 @@ export default function Certificados() {
       }
 
       const data = await response.json();
-      setPdfs(data.pdfs || data); 
+      setPdfs(data.pdfs || data);
     } catch (err) {
       console.error('Error al cargar PDFs:', err);
       setLoading(false);
@@ -59,29 +69,30 @@ export default function Certificados() {
 
   const handleAddCertificate = async () => {
     console.log('Agregar nuevo certificado');
-    const result = await DocumentPicker.getDocumentAsync({
-      type: 'application/pdf',
-    });
+    setAddPdfModal(true);
+    //  const result = await DocumentPicker.getDocumentAsync({
+    //    type: 'application/pdf',
+    //  });
 
-    if (!result.canceled && result.assets?.length) {
-      const file = result.assets[0];
-      const now = Date.now();
+    // if (!result.canceled && result.assets?.length) {
+    //   const file = result.assets[0];
+    //   const now = Date.now();
 
-      const fileWithDate = { ...file, lastModified: now };
-      setSelectedDocuments((prev) => [...prev, fileWithDate]);
-    }
+    //   const fileWithDate = { ...file, lastModified: now };
+    //   setListElements((prev) => [...prev, fileWithDate]);
+    // }
   };
 
-  const handleRemoveCertificate = async (file: DocumentPicker.DocumentPickerAsset) => {
+  const handleRemoveCertificate = async (id: number) => {
     console.log('Remover certificado');
-    try {
-      await FileSystem.deleteAsync(file.uri, { idempotent: true });
+    // try {
+    //   await FileSystem.deleteAsync(file.uri, { idempotent: true });
 
-      setSelectedDocuments((prev) => prev.filter((c) => c.uri !== file.uri));
-      console.log(`✅ Certificado eliminado: ${file.name}`);
-    } catch (error) {
-      console.error('❌ Error al eliminar certificado:', error);
-    }
+    //   setListElements((prev) => prev.filter((c) => c.id !== file.id));
+    //   console.log(`✅ Certificado eliminado: ${file.name}`);
+    // } catch (error) {
+    //   console.error('❌ Error al eliminar certificado:', error);
+    // }
   };
 
   const handleViewCertificate = async (uri: string) => {
@@ -89,14 +100,6 @@ export default function Certificados() {
     setCurrentPdfUri(uri);
     setPdfVisible(true);
   };
-
-  function formatDateSimple(timestamp: number) {
-    const date = new Date(timestamp);
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  }
 
   return (
     <>
@@ -121,39 +124,135 @@ export default function Certificados() {
             {/* Encabezado de columnas */}
             <View className="mt-6 flex-row justify-between border-b border-gray-400 px-4 py-2">
               <Text className="w-1/3 font-semibold text-white">Nombre</Text>
-              <Text className="w-1/3 text-center font-semibold text-white">Fecha</Text>
+              <Text className="w-1/3 text-center font-semibold text-white">
+                Fecha de expiración
+              </Text>
               <Text className="w-1/3 text-right font-semibold text-white">Acciones</Text>
             </View>
 
             {/* Lista de elementos */}
             <ScrollView>
-              {selectedDocuments.map((item, index) => (
-                <View
-                  key={index}
-                  className="flex-row items-center justify-between border-b border-gray-300 bg-white px-4 py-3">
-                  {/* Nombre */}
-                  <Text className="w-1/3 font-bold text-gray-900">{item.name}</Text>
+              {listElements &&
+                listElements.map((item, index) => (
+                  <View
+                    key={index}
+                    className="flex-row items-center justify-between border-b border-gray-300 bg-white px-4 py-3">
+                    {/* Nombre */}
+                    <Text className="w-1/3 font-bold text-gray-900">{item.name}</Text>
 
-                  {/* Fecha */}
-                  <Text className="w-1/3 text-center text-gray-700">
-                    {formatDateSimple(item.lastModified!)}
-                  </Text>
+                    {/* Fecha */}
+                    <Text className="w-1/3 text-center text-gray-700">
+                      {item.expirationDate.toLocaleDateString()}
+                    </Text>
 
-                  {/* Acciones */}
-                  <View className="w-1/3 flex-row justify-end space-x-5">
-                    <TouchableOpacity onPress={() => handleViewCertificate(item.uri)}>
-                      <AntDesign name="eye" size={24} color="#1e3a8a" />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleRemoveCertificate(item)}>
-                      <FontAwesome name="trash" size={24} color="#dc2626" />
-                    </TouchableOpacity>
+                    {/* Acciones */}
+                    <View className="w-1/3 flex-row justify-end gap-5 space-x-5">
+                      <TouchableOpacity onPress={() => handleViewCertificate(item.file.uri)}>
+                        <AntDesign name="eye" size={24} color="#1e3a8a" />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleRemoveCertificate(item.id)}>
+                        <FontAwesome name="trash" size={24} color="#dc2626" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              ))}
+                ))}
             </ScrollView>
           </View>
         </View>
       </Container>
+
+      <Modal visible={addPdfModal} animationType="fade" transparent={true}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: '#00000088',
+          }}>
+          <View
+            className="mx-auto items-center bg-white    "
+            style={{ padding: 20, borderRadius: 10, width: '50%' }}>
+            <Text className=" text-xl font-bold mb-5 ">Agregar nuevo certificado</Text>
+
+
+
+            {/* Selector de archivo PDF */}
+            <TouchableOpacity
+              className="mb-4  rounded bg-[#0A1C34] p-3"
+              onPress={async () => {
+                const result = await DocumentPicker.getDocumentAsync({
+                  type: 'application/pdf',
+                });
+
+                if (!result.canceled && result.assets?.length) {
+                  const newFile = {
+                    file: result.assets[0],
+                    expirationDate: expirationDate,
+                    id: Math.random(),
+                    name: result.assets[0].name,
+                  };
+
+                  setSelectedElement(newFile);
+
+                  listElements && setListElements([...listElements, newFile]);
+                }
+              }}>
+              <Text className=" text-center text-white">
+                {selectedElement ? selectedElement.name : 'Seleccionar PDF'}
+              </Text>
+            </TouchableOpacity>
+
+
+            {/* Fecha de expiración */}
+            <View className=' flex-row justify-center items-center mb-5 mt-2'>
+              <Text className=" mr-2">Fecha de expiración:</Text>
+              {Platform.OS === 'android' ? (
+                <TouchableOpacity
+                  className="  rounded border px-5 py-1 text-center"
+                  onPress={() => setShowDatePicker(true)}>
+                  <Text className="text-center">{expirationDate.toLocaleDateString()}</Text>
+                </TouchableOpacity>
+              ) : null}
+          
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={expirationDate}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) {
+                    setExpirationDate(selectedDate);
+                  }
+                }}
+              />
+            )}
+  </View>
+            {/* Botones */}
+            <View className="w-full flex-row  justify-between">
+              <TouchableOpacity
+                className="rounded bg-gray-300 px-4 py-2"
+                onPress={() => {
+                  setAddPdfModal(false);
+                  setSelectedElement(null);
+                }}>
+                <Text>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="rounded bg-green-600 px-4 py-2"
+                onPress={() => {
+                  console.log('Fecha:', expirationDate);
+                  console.log('Archivo:', selectedElement);
+                  setAddPdfModal(false);
+                }}>
+                <Text className="text-white">Guardar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <Modal visible={pdfVisible} animationType="slide" onRequestClose={() => setPdfVisible(false)}>
         <View style={{ flex: 1, backgroundColor: '#fff' }}>
