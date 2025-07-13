@@ -142,7 +142,7 @@ export default function Certificados() {
 
                     {/* Fecha */}
                     <Text className="w-1/3 text-center text-gray-700">
-                      {item.expirationDate.toLocaleDateString()}
+                      {item.expirationDate.toLocaleDateString('es-AR')}
                     </Text>
 
                     {/* Acciones */}
@@ -172,9 +172,7 @@ export default function Certificados() {
           <View
             className="mx-auto items-center bg-white    "
             style={{ padding: 20, borderRadius: 10, width: '50%' }}>
-            <Text className=" text-xl font-bold mb-5 ">Agregar nuevo certificado</Text>
-
-
+            <Text className=" mb-5 text-xl font-bold ">Agregar nuevo certificado</Text>
 
             {/* Selector de archivo PDF */}
             <TouchableOpacity
@@ -194,7 +192,6 @@ export default function Certificados() {
 
                   setSelectedElement(newFile);
 
-                  listElements && setListElements([...listElements, newFile]);
                 }
               }}>
               <Text className=" text-center text-white">
@@ -202,33 +199,31 @@ export default function Certificados() {
               </Text>
             </TouchableOpacity>
 
-
             {/* Fecha de expiración */}
-            <View className=' flex-row justify-center items-center mb-5 mt-2'>
+            <View className=" mb-5 mt-2 flex-row items-center justify-center">
               <Text className=" mr-2">Fecha de expiración:</Text>
               {Platform.OS === 'android' ? (
                 <TouchableOpacity
                   className="  rounded border px-5 py-1 text-center"
                   onPress={() => setShowDatePicker(true)}>
-                  <Text className="text-center">{expirationDate.toLocaleDateString()}</Text>
+                  <Text className="text-center">{expirationDate.toLocaleDateString('es-AR')}</Text>
                 </TouchableOpacity>
               ) : null}
-          
 
-            {showDatePicker && (
-              <DateTimePicker
-                value={expirationDate}
-                mode="date"
-                display="default"
-                onChange={(event, selectedDate) => {
-                  setShowDatePicker(false);
-                  if (selectedDate) {
-                    setExpirationDate(selectedDate);
-                  }
-                }}
-              />
-            )}
-  </View>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={expirationDate}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    setShowDatePicker(false);
+                    if (selectedDate) {
+                      setExpirationDate(selectedDate);
+                    }
+                  }}
+                />
+              )}
+            </View>
             {/* Botones */}
             <View className="w-full flex-row  justify-between">
               <TouchableOpacity
@@ -245,7 +240,13 @@ export default function Certificados() {
                 onPress={() => {
                   console.log('Fecha:', expirationDate);
                   console.log('Archivo:', selectedElement);
+                  const  newFile: pdf = {
+                    ...selectedElement!,
+                    expirationDate, // actualizo a fecha real
+                  };
+                  listElements && setListElements([...listElements, newFile]);
                   setAddPdfModal(false);
+                  setSelectedElement(null);
                 }}>
                 <Text className="text-white">Guardar</Text>
               </TouchableOpacity>
