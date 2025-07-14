@@ -11,12 +11,13 @@ import Pdf from 'react-native-pdf';
 import { Dimensions } from 'react-native';
 import { Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import axios from 'axios'
 
 export type pdf = {
   file: DocumentPicker.DocumentPickerAsset;
   expirationDate: Date;
   name: string;
-  id: number;
+  id?: string;
 };
 
 export default function Certificados() {
@@ -31,8 +32,11 @@ export default function Certificados() {
   const [error, setError] = useState(null);
   const [expirationDate, setExpirationDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  // Base URL de la API (CAMBIAR)
-  const API_BASE_URL = 'https://tu-api.com/api';
+  // Base URL de la API
+  const API_BASE_URL = 'http://localhost:8082';
+  const UPLOAD_PDF_PATH = '/deck/certificates/upload';
+  const LIST_CERTIFICATES_PATH = '/deck/certificates';
+  const GET_PDF_PATH = '/deck/certificates/';
 
   // Función para cargar todos los PDFs
   const loadPdfs = async () => {
@@ -40,21 +44,22 @@ export default function Certificados() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/pdfs`, {
-        method: 'GET',
+      const response = await axios.get(`${API_BASE_URL}${LIST_CERTIFICATES_PATH}`, {
         headers: {
           'Content-Type': 'application/json',
-          // Agregar headers de autenticación si es necesario
-          // 'Authorization': `Bearer ${token}`,
-        },
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      if (!response) {
+        //throw new Error(`Error: ${response.status} ${response.statusText}`);
+        console.log("error getting pdfs.")
       }
 
-      const data = await response.json();
-      setPdfs(data.pdfs || data);
+      const data = await response.data;
+      //data.map( e => {name} )
+      console.log(data, "data de pdfs")
+      //setPdfs(data.pdfs || data);
+      //setListElements(data);
     } catch (err) {
       console.error('Error al cargar PDFs:', err);
       setLoading(false);
@@ -64,7 +69,7 @@ export default function Certificados() {
   //cargar pdfs al inicio
   useEffect(() => {
     //comento funcion por que no hay api aun
-    //loadPdfs();
+    loadPdfs();
   }, []);
 
   const handleAddCertificate = async () => {
@@ -83,7 +88,24 @@ export default function Certificados() {
     // }
   };
 
-  const handleRemoveCertificate = async (id: number) => {
+  const saveCertificate = async (selectedElement: pdf) => {
+    const formData = new FormData();
+      formData.append('file', {
+        uri: selectedElement.file.uri,
+        type: selectedElement.file.mimeType,
+        name: selectedElement.file.name,
+      } as any )
+      formData.append('file_name', selectedElement.file.name)
+      formData.append('expiration_date', selectedElement.expirationDate.toISOString().split('T')[0]);
+
+    return axios.post(`${API_BASE_URL}${UPLOAD_PDF_PATH}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      }
+    })
+  };
+
+  const handleRemoveCertificate = async (id: string) => {
     console.log('Remover certificado');
     // try {
     //   await FileSystem.deleteAsync(file.uri, { idempotent: true });
@@ -95,9 +117,10 @@ export default function Certificados() {
     // }
   };
 
-  const handleViewCertificate = async (uri: string) => {
+  const handleViewCertificate = async (id: string) => {
     console.log('Ver certificado');
-    setCurrentPdfUri(uri);
+    const pdfURL = `${API_BASE_URL}${GET_PDF_PATH}${id}`
+    setCurrentPdfUri(pdfURL);
     setPdfVisible(true);
   };
 
@@ -147,10 +170,10 @@ export default function Certificados() {
 
                     {/* Acciones */}
                     <View className="w-1/3 flex-row justify-end gap-5 space-x-5">
-                      <TouchableOpacity onPress={() => handleViewCertificate(item.file.uri)}>
+                      <TouchableOpacity onPress={() => handleViewCertificate(item.id!)}>
                         <AntDesign name="eye" size={24} color="#1e3a8a" />
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => handleRemoveCertificate(item.id)}>
+                      <TouchableOpacity onPress={() => handleRemoveCertificate(item.id!)}>
                         <FontAwesome name="trash" size={24} color="#dc2626" />
                       </TouchableOpacity>
                     </View>
@@ -186,7 +209,6 @@ export default function Certificados() {
                   const newFile = {
                     file: result.assets[0],
                     expirationDate: expirationDate,
-                    id: Math.random(),
                     name: result.assets[0].name,
                   };
 
@@ -240,13 +262,22 @@ export default function Certificados() {
                 onPress={() => {
                   console.log('Fecha:', expirationDate);
                   console.log('Archivo:', selectedElement);
-                  const  newFile: pdf = {
-                    ...selectedElement!,
-                    expirationDate, // actualizo a fecha real
-                  };
-                  listElements && setListElements([...listElements, newFile]);
-                  setAddPdfModal(false);
-                  setSelectedElement(null);
+                  const newFile = saveCertificate(selectedElement!)
+                  .then(response => {
+                    console.log("Response: ", response.data);
+                    const newFile : pdf = {
+                      expirationDate: selectedElement!.expirationDate,
+                      file: selectedElement!.file,
+                      name: selectedElement!.name,
+                      id: response.data.id
+                    }
+                    listElements && setListElements([...listElements, newFile]);
+                    setAddPdfModal(false);
+                    setSelectedElement(null);
+                  })
+                  .catch(error => {
+                    console.log(error);
+                  });
                 }}>
                 <Text className="text-white">Guardar</Text>
               </TouchableOpacity>
