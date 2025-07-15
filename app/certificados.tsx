@@ -105,7 +105,7 @@ export default function Certificados() {
 
           setAddPdfModal(false);
           setSelectedElement(null);
-          setExpirationDate(new Date().toLocaleDateString('en-CA'))
+          setExpirationDate(new Date().toLocaleDateString('en-CA'));
         })
         .catch((error) => {
           console.error('Error al subir PDF:', error);
@@ -115,15 +115,16 @@ export default function Certificados() {
 
   const handleRemoveCertificate = async (id: string) => {
     console.log('Remover certificado');
-    // try {
-    //   await FileSystem.deleteAsync(file.uri, { idempotent: true });
-
-    //   setListElements((prev) => prev.filter((c) => c.id !== file.id));
-    //   console.log(`✅ Certificado eliminado: ${file.name}`);
-    // } catch (error) {
-    //   console.error('❌ Error al eliminar certificado:', error);
-    // }
-  };
+    //aca solo falta agregar la request para borrar y pasarle el id cuando este
+  //   axios
+  //     .delete('/api/resource/123')
+  //     .then((response) => {
+  //       console.log('Recurso eliminado:', response.data);
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error al eliminar el recurso:', error);
+  //     });
+   };
 
   const handleViewCertificate = async (id: string) => {
     console.log('Ver certificado');
