@@ -4,19 +4,18 @@ import { Container } from '~/components/Container';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
 import { useEffect, useState } from 'react';
-import * as Sharing from 'expo-sharing';
 import Pdf from 'react-native-pdf';
 import { Dimensions } from 'react-native';
 import { Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import axios from 'axios'
+import axios from 'axios';
 
 export type pdf = {
   file: DocumentPicker.DocumentPickerAsset;
-  expirationDate: Date;
-  name: string;
+  // Esto lo dejo como string por que asi lo recibis en la api
+  expirationDate: string;
+  fileName?: string;
   id?: string;
 };
 
@@ -24,14 +23,14 @@ export default function Certificados() {
   const [listElements, setListElements] = useState<pdf[] | null>([]);
   const [selectedElement, setSelectedElement] = useState<pdf | null>(null);
   //pdfs de la api
-  const [pdfs, setPdfs] = useState([]);
   const [pdfVisible, setPdfVisible] = useState(false);
   const [currentPdfUri, setCurrentPdfUri] = useState<string | null>(null);
   const [addPdfModal, setAddPdfModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [expirationDate, setExpirationDate] = useState(new Date());
+  const [expirationDate, setExpirationDate] = useState(new Date().toLocaleDateString('en-CA'));
   const [showDatePicker, setShowDatePicker] = useState(false);
+
   // Base URL de la API
   const API_BASE_URL = 'http://localhost:8082';
   const UPLOAD_PDF_PATH = '/deck/certificates/upload';
@@ -47,19 +46,17 @@ export default function Certificados() {
       const response = await axios.get(`${API_BASE_URL}${LIST_CERTIFICATES_PATH}`, {
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
       });
 
       if (!response) {
         //throw new Error(`Error: ${response.status} ${response.statusText}`);
-        console.log("error getting pdfs.")
+        console.log('error getting pdfs.');
       }
 
       const data = await response.data;
-      //data.map( e => {name} )
-      console.log(data, "data de pdfs")
-      //setPdfs(data.pdfs || data);
-      //setListElements(data);
+      console.log(data, 'data de pdfs');
+      setListElements(data);
     } catch (err) {
       console.error('Error al cargar PDFs:', err);
       setLoading(false);
@@ -68,41 +65,52 @@ export default function Certificados() {
 
   //cargar pdfs al inicio
   useEffect(() => {
-    //comento funcion por que no hay api aun
     loadPdfs();
-  }, []);
+    if (selectedElement) {
+      console.log('selectedElement actualizado:', selectedElement);
+    }
+  }, [selectedElement]);
 
-  const handleAddCertificate = async () => {
-    console.log('Agregar nuevo certificado');
-    setAddPdfModal(true);
-    //  const result = await DocumentPicker.getDocumentAsync({
-    //    type: 'application/pdf',
-    //  });
-
-    // if (!result.canceled && result.assets?.length) {
-    //   const file = result.assets[0];
-    //   const now = Date.now();
-
-    //   const fileWithDate = { ...file, lastModified: now };
-    //   setListElements((prev) => [...prev, fileWithDate]);
-    // }
-  };
-
-  const saveCertificate = async (selectedElement: pdf) => {
-    const formData = new FormData();
-      formData.append('file', {
+  const saveCertificate = async () => {
+    console.log(selectedElement, 'pdf seleccionado');
+    if (selectedElement) {
+      const formData = new FormData();
+      const newFile = {
         uri: selectedElement.file.uri,
         type: selectedElement.file.mimeType,
         name: selectedElement.file.name,
-      } as any )
-      formData.append('file_name', selectedElement.file.name)
-      formData.append('expiration_date', selectedElement.expirationDate.toISOString().split('T')[0]);
+      };
+      formData.append('file', newFile as any);
+      formData.append('file_name', selectedElement.file.name);
+      formData.append('expiration_date', selectedElement.expirationDate);
 
-    return axios.post(`${API_BASE_URL}${UPLOAD_PDF_PATH}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      }
-    })
+      axios
+        .post(`${API_BASE_URL}${UPLOAD_PDF_PATH}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        })
+        .then((resultado) => {
+          console.log('se agrego nuevo certificado con id=>', resultado.data.id);
+          const postId = resultado.data.id;
+          if (selectedElement) {
+            const fullElement = {
+              ...selectedElement,
+              id: postId,
+            };
+            if (listElements) {
+              setListElements([...listElements, fullElement]);
+            }
+          }
+
+          setAddPdfModal(false);
+          setSelectedElement(null);
+          setExpirationDate(new Date().toLocaleDateString('en-CA'))
+        })
+        .catch((error) => {
+          console.error('Error al subir PDF:', error);
+        });
+    }
   };
 
   const handleRemoveCertificate = async (id: string) => {
@@ -119,7 +127,7 @@ export default function Certificados() {
 
   const handleViewCertificate = async (id: string) => {
     console.log('Ver certificado');
-    const pdfURL = `${API_BASE_URL}${GET_PDF_PATH}${id}`
+    const pdfURL = `${API_BASE_URL}${GET_PDF_PATH}${id}`;
     setCurrentPdfUri(pdfURL);
     setPdfVisible(true);
   };
@@ -138,7 +146,7 @@ export default function Certificados() {
             {/* Botón Agregar */}
             <View className="mb-2 mt-6 items-start">
               <TouchableOpacity
-                onPress={handleAddCertificate}
+                onPress={() => setAddPdfModal(true)}
                 className="rounded-md bg-white px-4 py-2 ">
                 <Text className="font-semibold text-[#0A1C34]">Agregar nuevo</Text>
               </TouchableOpacity>
@@ -161,11 +169,11 @@ export default function Certificados() {
                     key={index}
                     className="flex-row items-center justify-between border-b border-gray-300 bg-white px-4 py-3">
                     {/* Nombre */}
-                    <Text className="w-1/3 font-bold text-gray-900">{item.name}</Text>
+                    <Text className="w-1/3 font-bold text-gray-900">{item.fileName}</Text>
 
                     {/* Fecha */}
                     <Text className="w-1/3 text-center text-gray-700">
-                      {item.expirationDate.toLocaleDateString('es-AR')}
+                      {item.expirationDate.toString()}
                     </Text>
 
                     {/* Acciones */}
@@ -209,15 +217,14 @@ export default function Certificados() {
                   const newFile = {
                     file: result.assets[0],
                     expirationDate: expirationDate,
-                    name: result.assets[0].name,
+                    fileName: result.assets[0].name,
                   };
 
                   setSelectedElement(newFile);
-
                 }
               }}>
               <Text className=" text-center text-white">
-                {selectedElement ? selectedElement.name : 'Seleccionar PDF'}
+                {selectedElement ? selectedElement.fileName : 'Seleccionar PDF'}
               </Text>
             </TouchableOpacity>
 
@@ -228,19 +235,22 @@ export default function Certificados() {
                 <TouchableOpacity
                   className="  rounded border px-5 py-1 text-center"
                   onPress={() => setShowDatePicker(true)}>
-                  <Text className="text-center">{expirationDate.toLocaleDateString('es-AR')}</Text>
+                  <Text className="text-center">{expirationDate}</Text>
                 </TouchableOpacity>
               ) : null}
 
               {showDatePicker && (
                 <DateTimePicker
-                  value={expirationDate}
+                  value={new Date(expirationDate)}
                   mode="date"
                   display="default"
                   onChange={(event, selectedDate) => {
                     setShowDatePicker(false);
                     if (selectedDate) {
-                      setExpirationDate(selectedDate);
+                      const formattedDate = selectedDate.toLocaleDateString('en-CA');
+                      setExpirationDate(formattedDate);
+                      selectedElement &&
+                        setSelectedElement({ ...selectedElement, expirationDate: formattedDate });
                     }
                   }}
                 />
@@ -262,22 +272,7 @@ export default function Certificados() {
                 onPress={() => {
                   console.log('Fecha:', expirationDate);
                   console.log('Archivo:', selectedElement);
-                  const newFile = saveCertificate(selectedElement!)
-                  .then(response => {
-                    console.log("Response: ", response.data);
-                    const newFile : pdf = {
-                      expirationDate: selectedElement!.expirationDate,
-                      file: selectedElement!.file,
-                      name: selectedElement!.name,
-                      id: response.data.id
-                    }
-                    listElements && setListElements([...listElements, newFile]);
-                    setAddPdfModal(false);
-                    setSelectedElement(null);
-                  })
-                  .catch(error => {
-                    console.log(error);
-                  });
+                  saveCertificate();
                 }}>
                 <Text className="text-white">Guardar</Text>
               </TouchableOpacity>
