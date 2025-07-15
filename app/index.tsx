@@ -45,8 +45,12 @@ export default function Home() {
     //   });
 
     // const unlockScreenOerientation = async () => {
+    // 
     //   await ScreenOrientation.unlockAsync();
-    // };
+  fetch('https://httpbin.org/get')
+  .then(response => response.json())
+  .then(data => console.log(data));  
+  
     async function changeScreenOrientation() {
       await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
     }
@@ -80,14 +84,15 @@ export default function Home() {
             ))}
           </View>
 
-          <View className="mt-4 flex-row justify-between gap-4 px-4 ">
-            <View className="w-1/2 ">
+
+          <View className=" flex-row justify-around  ">
+            <View className="w-1/3 ">
               <Link href={{ pathname: '/maquinas' }} asChild>
                 <Button className="bg-[#2D9483]" title="Maquinas" />
               </Link>
             </View>
 
-            <View className="w-1/2">
+            <View className="w-1/3">
               <Link href={{ pathname: '/cubiertas' }} asChild>
                 <Button className="bg-[#294944]" title="Cubiertas" />
               </Link>
