@@ -3,13 +3,14 @@ import { useNavigation } from '@react-navigation/native';
 
 type Props = {
   title: string;
+  route:string
 };
 
-export function SectionButtons({ title }: Props) {
+export function SectionButtons({ title,route }: Props) {
   const navigation = useNavigation();
 
   const handlePress = () => {
-    navigation.navigate(`${title}` as never); 
+    navigation.navigate(`${route}` as never); 
   };
 
   return (
