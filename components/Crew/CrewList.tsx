@@ -175,17 +175,15 @@ function CrewList() {
         <SearchBar handleSearch={handleSearch} searchText={searchText} />
         <AddCrewButton setFormMode={setFormMode} setFormModal={setFormModal} />
       </View>
-      <ScrollView>
-        <View className="m-4">
-          <View className="flex-row bg-gray-200 p-2">
-            <Text className="flex-1 font-bold">Nombre</Text>
-            <Text className="flex-1 font-bold">Apellido</Text>
-            <Text className="flex-1 font-bold">Cargo</Text>
-            <Text className="font-bold">Acciones</Text>
-          </View>
+      <View className="m-4 flex-1">
+        <View className="flex-row bg-gray-200 p-2">
+          <Text className="flex-1 font-bold">Nombre</Text>
+          <Text className="flex-1 font-bold">Apellido</Text>
+          <Text className="flex-1 font-bold">Cargo</Text>
+          <Text className="font-bold">Acciones</Text>
+        </View>
 
-          {/* Filas */}
-
+        {/* Filas */}
           <FlatList
             data={filteredCrew}
             keyExtractor={(item) => item.id}
@@ -211,13 +209,12 @@ function CrewList() {
             )}
           />
         </View>
-        <FormCrewModal
-          visible={formModal}
-          mode={formMode}
-          setVisible={setFormModal}
-          selectedCrew={selectedCrew}
-        />
-      </ScrollView>
+      <FormCrewModal
+        visible={formModal}
+        mode={formMode}
+        setVisible={setFormModal}
+        selectedCrew={selectedCrew}
+      />
     </>
   );
 }
