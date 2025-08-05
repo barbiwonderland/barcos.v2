@@ -1,5 +1,4 @@
 import { View, TextInput, Button, Text, Modal, TouchableOpacity, ScrollView } from 'react-native';
-import { useRoute } from '@react-navigation/native';
 import { Dispatch, useState } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -23,7 +22,7 @@ export default function ModalFormCrew({
       <View className="flex-1 items-center justify-center bg-black/50">
         <View className="w-6/12 rounded-2xl bg-white p-5 py-14">
           <Text className="mb-4 text-left text-2xl font-bold">
-            {mode == 'add' ? 'Agregar' : mode == 'edit' ? 'Editar' : ''}
+            {mode == 'add' ? 'Agregar' : mode == 'edit' ? 'Editar' : 'Detalles'}
           </Text>
           <ScrollView>
             <View className="mb-3 flex-row  gap-3 ">

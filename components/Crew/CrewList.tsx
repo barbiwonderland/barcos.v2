@@ -14,12 +14,13 @@ function CrewList() {
   const [visible, setVisible] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const [formModal, setFormModal] = useState(false);
+  const [formMode, setFormMode] = useState('');
 
   return (
     <>
       <View className="mx-3 my-3 flex-row justify-between px-2">
         <SearchBar />
-        <AddCrewButton />
+        <AddCrewButton setFormMode={setFormMode} setFormModal={setFormModal} />
       </View>
       <View className="m-4">
         <View className="flex-row bg-gray-200 p-2">
@@ -43,15 +44,15 @@ function CrewList() {
                   visible={openId === item.id}
                   setVisible={(visible) => {
                     setOpenId(visible ? item.id : null);
-
                   }}
+                  setFormMode={setFormMode}
                   setFormModal={setFormModal}
                 />
               </View>
             </View>
           )}
         />
-        <FormCrewModal visible={formModal} mode="edit" setVisible={setFormModal} />
+        <FormCrewModal visible={formModal} mode={formMode} setVisible={setFormModal} />
       </View>
     </>
   );

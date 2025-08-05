@@ -8,10 +8,12 @@ export default function ActionModal({
   visible,
   setVisible,
   setFormModal,
+  setFormMode,
 }: {
   visible: boolean;
   setVisible: Dispatch<SetStateAction<boolean>>;
   setFormModal: Dispatch<SetStateAction<boolean>>;
+  setFormMode: Dispatch<SetStateAction<string>>;
 }) {
   const navigation = useNavigation<any>();
   return (
@@ -29,13 +31,16 @@ export default function ActionModal({
           <TouchableOpacity
             onPress={() => {
               setVisible(false);
+              setFormMode('');
+              setFormModal(true);
             }}>
             <Text className="p-2">👁 Ver más</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              setFormModal(true);
               setVisible(false);
+              setFormMode('edit');
+              setFormModal(true);
               console.log('ver mas');
             }}>
             <Text className="p-2">✏️ Editar</Text>
