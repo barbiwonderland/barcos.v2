@@ -147,11 +147,32 @@ function CrewList() {
   const [formModal, setFormModal] = useState(false);
   const [formMode, setFormMode] = useState('');
   const [selectedCrew, setSelectedCrew] = useState<any>(null);
+  const [searchText, setSearchText] = useState('');
+  const [filteredCrew, setFilteredCrew] = useState(crewData);
+
+  const normalizeText = (text: string) =>
+    text
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+  const handleSearch = (text: string) => {
+    setSearchText(text);
+    const normalizedSearch = normalizeText(text);
+
+    const filtered = crewData.filter((crew) => {
+      const combinedFields = Object.values(crew).join(' ');
+      const normalizedCombined = normalizeText(combinedFields);
+      return normalizedCombined.includes(normalizedSearch);
+    });
+
+    setFilteredCrew(filtered);
+  };
 
   return (
     <>
       <View className="mx-3 my-3 flex-row justify-between px-2">
-        <SearchBar />
+        <SearchBar handleSearch={handleSearch} searchText={searchText} />
         <AddCrewButton setFormMode={setFormMode} setFormModal={setFormModal} />
       </View>
       <ScrollView>
@@ -166,7 +187,7 @@ function CrewList() {
           {/* Filas */}
 
           <FlatList
-            data={crewData}
+            data={filteredCrew}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <>
