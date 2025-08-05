@@ -3,6 +3,7 @@ import SearchBar from '../SearchBar';
 import AddCrewButton from './AddCrewButton';
 import { useState } from 'react';
 import ActionModal from './ActionModal';
+import FormCrewModal from './ModalFormCrew';
 
 function CrewList() {
   const crewData = [
@@ -12,6 +13,7 @@ function CrewList() {
   ];
   const [visible, setVisible] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [formModal, setFormModal] = useState(false);
 
   return (
     <>
@@ -36,17 +38,20 @@ function CrewList() {
               <Text className="flex-1">{item.nombre}</Text>
               <Text className="flex-1 ">{item.apellido}</Text>
               <Text className="flex-1 ">{item.cargo}</Text>
-              <View className='w-12 items-center'>
+              <View className="w-12 items-center">
                 <ActionModal
                   visible={openId === item.id}
                   setVisible={(visible) => {
                     setOpenId(visible ? item.id : null);
+
                   }}
+                  setFormModal={setFormModal}
                 />
               </View>
             </View>
           )}
         />
+        <FormCrewModal visible={formModal} mode="write" setVisible={setFormModal} />
       </View>
     </>
   );

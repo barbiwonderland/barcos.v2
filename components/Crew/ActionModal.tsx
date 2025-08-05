@@ -2,17 +2,22 @@ import { Dispatch, SetStateAction, useRef } from 'react';
 import { Modal, Text, TouchableOpacity, TouchableOpacityProps, View } from 'react-native';
 import Popover, { PopoverMode, PopoverPlacement } from 'react-native-popover-view';
 import Entypo from '@expo/vector-icons/Entypo';
+import { useNavigation } from 'expo-router';
 
 export default function ActionModal({
   visible,
   setVisible,
+  setFormModal,
 }: {
   visible: boolean;
   setVisible: Dispatch<SetStateAction<boolean>>;
+  setFormModal: Dispatch<SetStateAction<boolean>>;
 }) {
+  const navigation = useNavigation<any>();
   return (
     <View>
       <Popover
+        arrowSize={{ width: 0, height: 0 }}
         isVisible={visible}
         from={
           <TouchableOpacity onPress={() => setVisible(true)}>
@@ -29,7 +34,9 @@ export default function ActionModal({
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
+              setFormModal(true);
               setVisible(false);
+              console.log('ver mas');
             }}>
             <Text className="p-2">✏️ Editar</Text>
           </TouchableOpacity>
