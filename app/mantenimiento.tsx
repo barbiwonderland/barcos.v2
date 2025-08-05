@@ -16,7 +16,7 @@ export type pdf = {
   id?: string;
 };
 
-export default function Certificados() {
+export default function Mantenimiento() {
   const [listElements, setListElements] = useState<pdf[] | null>([]);
   const [selectedElement, setSelectedElement] = useState<pdf | null>(null);
   //pdfs de la api
@@ -64,12 +64,12 @@ export default function Certificados() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Certificados' }} />
+      <Stack.Screen options={{ title: 'Mantenimiento' }} />
       <Container>
         <View className="h-full w-full bg-[#0A1C34]">
           {/* Título principal */}
           <Text className="mt-10 text-center text-xl font-bold uppercase text-white sm:text-3xl">
-            CERTIFICADOS
+            Mantenimiento
           </Text>
 
           <View className=" mx-auto h-3/4 w-10/12">

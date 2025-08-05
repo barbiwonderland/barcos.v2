@@ -39,7 +39,7 @@ export default function Home() {
 
 axios.get('http://localhost:8082/deck/certificates/expireds') 
   .then((res) => {
-    console.log(res);      
+    console.log( "certificados rta",res,);      
     setData(res.data);      
     setLoading(false);
   })
@@ -71,7 +71,7 @@ axios.get('http://localhost:8082/deck/certificates/expireds')
           <Text className="text-center font-bold uppercase sm:text-3xl">BUQUE RUISEÑOR</Text>
           <View className="h-5/6 mx-auto w-11/12  flex-col flex-wrap content-center  py-10">
           {/* aca cambia a data cuando descomentes la peticion con lo de la api */}
-            {data.map((item) => (
+            {data && data.map((item) => (
               <View key={item.id} className=" m-2 flex w-5/12 flex-row  gap-2 items-center bg-white/50 rounded-full  p-4">
                 {item.priority === 'medium' ? (
                   <AntDesign name="warning" size={24} color="orange" />

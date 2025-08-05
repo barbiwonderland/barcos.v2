@@ -12,6 +12,7 @@ export type ModalAddPdfProps = {
   setSelectedElement: React.Dispatch<React.SetStateAction<pdf | null>>;
   setAddPdfModal: React.Dispatch<React.SetStateAction<boolean>>;
   addPdfModal: boolean;
+
 };
 
 function ModalAddPdf({ listElements, setListElements,selectedElement,setSelectedElement, setAddPdfModal, addPdfModal }: ModalAddPdfProps) {
@@ -101,6 +102,7 @@ function ModalAddPdf({ listElements, setListElements,selectedElement,setSelected
           </TouchableOpacity>
 
           {/* Fecha de expiración */}
+          
           <View className=" mb-5 mt-2 flex-row items-center justify-center">
             <Text className=" mr-2">Fecha de expiración:</Text>
             {Platform.OS === 'android' ? (

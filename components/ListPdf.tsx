@@ -2,15 +2,19 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import axios from 'axios';
 import { useState } from 'react';
-import {  ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { pdf } from '~/app/certificados';
 import ModalPdf from './ModalViewPdf';
 
-function ListPdf({listElements}: {listElements: pdf[] | null}) {
-
-    const [pdfVisible, setPdfVisible] = useState(false);
-    const [currentPdfUri, setCurrentPdfUri] = useState<string | null>(null);
-  
+function ListPdf({
+  listElements,
+  showExpiration,
+}: {
+  listElements: pdf[] | null;
+  showExpiration: boolean;
+}) {
+  const [pdfVisible, setPdfVisible] = useState(false);
+  const [currentPdfUri, setCurrentPdfUri] = useState<string | null>(null);
 
   // Base URL de la API
   const API_BASE_URL = 'http://localhost:8082';
@@ -40,27 +44,31 @@ function ListPdf({listElements}: {listElements: pdf[] | null}) {
       {/* Encabezado de columnas */}
       <View className="mt-6 flex-row justify-between border-b border-gray-400 px-4 py-2">
         <Text className="w-1/3 font-semibold text-white">Nombre</Text>
-        <Text className="w-1/3 text-center font-semibold text-white">Fecha de expiración</Text>
-        <Text className="w-1/3 text-right font-semibold text-white">Acciones</Text>
+        {showExpiration && (
+          <Text className="flex-1 text-center font-semibold text-white">Fecha de expiración</Text>
+        )}
+        <Text className="flex-1 text-right font-semibold text-white">Acciones</Text>
       </View>
 
       {/* Lista de elementos */}
-      <ScrollView>
+      <ScrollView className='w-full'>
         {listElements &&
           listElements.map((item, index) => (
             <View
               key={index}
-              className="flex-row items-center justify-between border-b border-gray-300 bg-white px-4 py-3">
+              className="flex-1 flex-row items-center justify-between border-b border-gray-300 bg-white px-4 py-3">
               {/* Nombre */}
-              <Text className="w-1/3 font-bold text-gray-900">{item.fileName}</Text>
+              <Text className=" font-bold text-gray-900">{item.fileName}</Text>
 
               {/* Fecha */}
-              <Text className="w-1/3 text-center text-gray-700">
-                {item.expirationDate.toString()}
-              </Text>
+              {showExpiration && (
+                <Text className=" text-center text-gray-700">
+                  {item.expirationDate.toString()}
+                </Text>
+              )}
 
               {/* Acciones */}
-              <View className="w-1/3 flex-row justify-end gap-5 space-x-5">
+              <View className=" flex-row justify-end gap-5 space-x-5">
                 <TouchableOpacity onPress={() => handleViewCertificate(item.id!)}>
                   <AntDesign name="eye" size={24} color="#1e3a8a" />
                 </TouchableOpacity>
@@ -72,7 +80,11 @@ function ListPdf({listElements}: {listElements: pdf[] | null}) {
           ))}
       </ScrollView>
 
-  <ModalPdf pdfVisible={pdfVisible} currentPdfUri={currentPdfUri} setPdfVisible={setPdfVisible} />
+      <ModalPdf
+        pdfVisible={pdfVisible}
+        currentPdfUri={currentPdfUri}
+        setPdfVisible={setPdfVisible}
+      />
     </>
   );
 }
