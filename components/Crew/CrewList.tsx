@@ -51,7 +51,7 @@ function CrewList() {
             </View>
           )}
         />
-        <FormCrewModal visible={formModal} mode="write" setVisible={setFormModal} />
+        <FormCrewModal visible={formModal} mode="edit" setVisible={setFormModal} />
       </View>
     </>
   );
