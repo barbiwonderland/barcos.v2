@@ -184,31 +184,29 @@ function CrewList() {
         </View>
 
         {/* Filas */}
-          <FlatList
-            data={filteredCrew}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <>
-                <View className="flex-row border-b border-gray-300 p-2">
-                  <Text className="flex-1">{item.nombre}</Text>
-                  <Text className="flex-1 ">{item.apellido}</Text>
-                  <Text className="flex-1 ">{item.cargo}</Text>
-                  <View className="w-12 items-center">
-                    <ActionModal
-                      visible={openId === item.id}
-                      setVisible={(visible) => {
-                        setOpenId(visible ? item.id : null);
-                      }}
-                      setFormMode={setFormMode}
-                      setFormModal={setFormModal}
-                      setSelectedCrew={() => setSelectedCrew(item)}
-                    />
-                  </View>
-                </View>
-              </>
-            )}
-          />
-        </View>
+        <FlatList
+          data={filteredCrew}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View className="flex-row border-b border-gray-300 p-2">
+              <Text className="flex-1">{item.nombre}</Text>
+              <Text className="flex-1 ">{item.apellido}</Text>
+              <Text className="flex-1 ">{item.cargo}</Text>
+              <View className="w-12 items-center">
+                <ActionModal
+                  visible={openId === item.id}
+                  setVisible={(visible) => {
+                    setOpenId(visible ? item.id : null);
+                  }}
+                  setFormMode={setFormMode}
+                  setFormModal={setFormModal}
+                  setSelectedCrew={() => setSelectedCrew(item)}
+                />
+              </View>
+            </View>
+          )}
+        />
+      </View>
       <FormCrewModal
         visible={formModal}
         mode={formMode}
