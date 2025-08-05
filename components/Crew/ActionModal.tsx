@@ -9,11 +9,13 @@ export default function ActionModal({
   setVisible,
   setFormModal,
   setFormMode,
+  setSelectedCrew,
 }: {
   visible: boolean;
   setVisible: Dispatch<SetStateAction<boolean>>;
   setFormModal: Dispatch<SetStateAction<boolean>>;
   setFormMode: Dispatch<SetStateAction<string>>;
+  setSelectedCrew: any;
 }) {
   const navigation = useNavigation<any>();
   return (
@@ -33,6 +35,7 @@ export default function ActionModal({
               setVisible(false);
               setFormMode('');
               setFormModal(true);
+              setSelectedCrew()
             }}>
             <Text className="p-2">👁 Ver más</Text>
           </TouchableOpacity>

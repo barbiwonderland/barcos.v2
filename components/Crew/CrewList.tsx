@@ -7,14 +7,38 @@ import FormCrewModal from './ModalFormCrew';
 
 function CrewList() {
   const crewData = [
-    { id: '1', nombre: 'Juan', apellido: 'Pérez', cargo: 'Capitán' },
-    { id: '2', nombre: 'Ana', apellido: 'Gómez', cargo: 'Marinera' },
-    { id: '3', nombre: 'Luis', apellido: 'Martínez', cargo: 'Mecánico' },
+    {
+      id: '1',
+      nombre: 'Juan',
+      apellido: 'Pérez',
+      cargo: 'Capitán',
+      dni: '30123456',
+      fechaNacimiento: '1980-05-10',
+      numeroLibreta: 'CAP12345',
+    },
+    {
+      id: '2',
+      nombre: 'Ana',
+      apellido: 'Gómez',
+      cargo: 'Marinera',
+      dni: '32234567',
+      fechaNacimiento: '1990-08-22',
+      numeroLibreta: 'MAR67890',
+    },
+    {
+      id: '3',
+      nombre: 'Luis',
+      apellido: 'Martínez',
+      cargo: 'Mecánico',
+      dni: '28987654',
+      fechaNacimiento: '1985-11-15',
+      numeroLibreta: 'MEC54321',
+    },
   ];
-  const [visible, setVisible] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const [formModal, setFormModal] = useState(false);
   const [formMode, setFormMode] = useState('');
+  const [selectedCrew, setSelectedCrew] = useState<any>(null);
 
   return (
     <>
@@ -35,25 +59,33 @@ function CrewList() {
           data={crewData}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <View className="flex-row border-b border-gray-300 p-2">
-              <Text className="flex-1">{item.nombre}</Text>
-              <Text className="flex-1 ">{item.apellido}</Text>
-              <Text className="flex-1 ">{item.cargo}</Text>
-              <View className="w-12 items-center">
-                <ActionModal
-                  visible={openId === item.id}
-                  setVisible={(visible) => {
-                    setOpenId(visible ? item.id : null);
-                  }}
-                  setFormMode={setFormMode}
-                  setFormModal={setFormModal}
-                />
+            <>
+              <View className="flex-row border-b border-gray-300 p-2">
+                <Text className="flex-1">{item.nombre}</Text>
+                <Text className="flex-1 ">{item.apellido}</Text>
+                <Text className="flex-1 ">{item.cargo}</Text>
+                <View className="w-12 items-center">
+                  <ActionModal
+                    visible={openId === item.id}
+                    setVisible={(visible) => {
+                      setOpenId(visible ? item.id : null);
+                    }}
+                    setFormMode={setFormMode}
+                    setFormModal={setFormModal}
+                    setSelectedCrew={() => setSelectedCrew(item)}
+                  />
+                </View>
               </View>
-            </View>
+            </>
           )}
         />
-        <FormCrewModal visible={formModal} mode={formMode} setVisible={setFormModal} />
       </View>
+      <FormCrewModal
+        visible={formModal}
+        mode={formMode}
+        setVisible={setFormModal}
+        selectedCrew={selectedCrew}
+      />
     </>
   );
 }
