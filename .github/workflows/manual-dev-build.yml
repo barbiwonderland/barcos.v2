@@ -22,10 +22,9 @@ jobs:
       - name: Install Expo CLI
         run: npm install -g expo-cli eas-cli
 
-      - name: Authenticate with Expo
-        run: eas login
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
 
       - name: Build with Expo Development Profile
         run: eas build --profile development --platform android
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
